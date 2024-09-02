@@ -2,6 +2,10 @@ import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import { Weapon } from './modules/weapons';
 import { Bullet } from './modules/bullets';
+import { GameStateManager } from './managers/GameStateManager';
+import { PowerUpManager } from './managers/PowerUpManager';
+import { MonsterManager } from './managers/MonsterManager';
+import { WaveManager } from './managers/WaveManager';
 
 const App = () => {
   const gameRef = useRef(null);
@@ -50,6 +54,18 @@ const App = () => {
       this.load.image(`bullet${i}`, `bullet${i}.png`);
     }
 
+    // Load power-up sprites
+    this.load.image('powerup_shield', 'powerup_shield.png');
+    this.load.image('powerup_speed', 'powerup_speed.png');
+    this.load.image('powerup_screenClear', 'powerup_screenClear.png');
+    this.load.image('powerup_extraLife', 'powerup_extraLife.png');
+
+    // Load monster sprites
+    this.load.image('monster_small', 'monster_small.png');
+    this.load.image('monster_medium', 'monster_medium.png');
+    this.load.image('monster_large', 'monster_large.png');
+    this.load.image('monster_boss', 'monster_boss.png');
+
     this.load.audio('backgroundMusic', 'sounds/track1.mp3');
   };
 
@@ -93,6 +109,24 @@ const App = () => {
     this.sound.pauseOnBlur = false;
     this.music = this.sound.add('backgroundMusic', { loop: true });
 
+    // Initialize GameStateManager
+    this.gameState = new GameStateManager(this);
+    this.gameState.create();
+
+    // Initialize PowerUpManager
+    this.powerUpManager = new PowerUpManager(this);
+    this.powerUpManager.setupCollision(this.player);
+
+    // Initialize Monster and Wave Managers
+    this.monsterManager = new MonsterManager(this);
+    this.waveManager = new WaveManager(this, this.monsterManager);
+
+    // Setup collisions
+    this.monsterManager.setupCollisions(this.player, this.weapons[this.currentWeapon].bullets);
+
+    // Start the wave system
+    this.waveManager.startWaves();
+
     // Start audio on first input
     this.input.once('pointerdown', () => {
       if (this.sound.context.state === 'suspended') {
@@ -127,6 +161,24 @@ const App = () => {
       this.currentWeapon = (this.currentWeapon + 1) % this.weapons.length;
       this.weaponName.setText(this.weapons[this.currentWeapon].name);
     };
+
+    // Set up timer for spawning power-ups
+    this.time.addEvent({
+      delay: 10000, // 10 seconds
+      callback: () => this.powerUpManager.spawnRandomPowerUp(),
+      loop: true
+    });
+
+    // Set up timer for potentially spawning extra life (once per minute)
+    this.time.addEvent({
+      delay: 60000, // 1 minute
+      callback: () => {
+        if (Phaser.Math.Between(1, 100) <= 20) { // 20% chance
+          this.powerUpManager.spawnExtraLife();
+        }
+      },
+      loop: true
+    });
   };
 
   const update = function() {
@@ -135,21 +187,30 @@ const App = () => {
 
     this.player.setVelocity(0);
 
+    const speed = 300 * this.gameState.speedLevel / 5; // Adjust speed based on speedLevel
+
     if (this.cursors.left.isDown) {
-      this.player.setVelocityX(-300);
+      this.player.setVelocityX(-speed);
     } else if (this.cursors.right.isDown) {
-      this.player.setVelocityX(300);
+      this.player.setVelocityX(speed);
     }
 
     if (this.cursors.up.isDown) {
-      this.player.setVelocityY(-300);
+      this.player.setVelocityY(-speed);
     } else if (this.cursors.down.isDown) {
-      this.player.setVelocityY(300);
+      this.player.setVelocityY(speed);
     }
 
     if (this.spaceKey.isDown) {
       this.weapons[this.currentWeapon].fire(this.player);
     }
+
+    // Remove off-screen monsters
+    this.monsterManager.monsters.getChildren().forEach((monster) => {
+      if (monster.x < -monster.width) {
+        monster.destroy();
+      }
+    });
 
     // Update weapon name display
     this.weaponName.setText(this.weapons[this.currentWeapon].name);
