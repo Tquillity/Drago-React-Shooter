@@ -1,0 +1,19 @@
+// filename: _musicToggle.scss
+
+#musicToggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  background: #fff;
+  padding: 5px;
+  border: 1px solid #ccc;
+
+  input {
+      margin-right: 5px;
+  }
+}
+
+.slider {
+  color: black;
+}
