@@ -112,6 +112,7 @@ const App = () => {
     // Initialize GameStateManager
     this.gameState = new GameStateManager(this);
     this.gameState.create();
+    this.gameState.scene.player = this.player; // Move this line here
 
     // Initialize PowerUpManager
     this.powerUpManager = new PowerUpManager(this);

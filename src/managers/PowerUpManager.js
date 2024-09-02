@@ -41,18 +41,19 @@ export class PowerUpManager {
   }
 
   clearScreen() {
-    // Logic to clear all visible monsters
-    // This would involve getting all monsters from your monster group(s) and applying damage or destroying them
-    // For example:
-    this.scene.monsters.getChildren().forEach((monster) => {
-      if (monster.monsterType === 'small' || monster.monsterType === 'medium') {
-        monster.destroy();
-      } else if (monster.monsterType === 'large') {
-        monster.takeDamage(monster.health); // Assuming takeDamage method exists
-      } else if (monster.monsterType === 'boss') {
-        monster.takeDamage(monster.health * 0.25); // 25% damage to bosses
-      }
-    });
+    if (this.scene.monsterManager && this.scene.monsterManager.monsters) {
+      this.scene.monsterManager.monsters.getChildren().forEach((monster) => {
+        if (monster.type === 'small' || monster.type === 'medium') {
+          monster.destroy();
+        } else if (monster.type === 'large') {
+          monster.takeDamage(monster.health);
+        } else if (monster.type === 'boss') {
+          monster.takeDamage(monster.health * 0.25); // 25% damage to bosses
+        }
+      });
+    } else {
+      console.warn('MonsterManager or monsters group not found. Unable to clear screen.');
+    }
   }
 
   spawnRandomPowerUp() {

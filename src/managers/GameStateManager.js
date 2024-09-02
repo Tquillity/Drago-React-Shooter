@@ -13,6 +13,7 @@ export class GameStateManager {
     this.speedText = null;
     this.isImmune = false;
     this.immunityTimer = null;
+    this.isGameOver = false;
   }
 
   create() {
@@ -23,14 +24,14 @@ export class GameStateManager {
   }
 
   hit(monsterSize) {
-    if (this.isImmune) {
-      return false; // Player is immune, no damage taken
+    if (this.isImmune || this.isGameOver) {
+      return false; // Player is immune or game is over
     }
 
     if (this.hasShield) {
       this.hasShield = false;
       this.updateShieldDisplay();
-      return false; // Player wasn't killed
+      return false; // Shield absorbed the hit
     } else {
       this.lives--;
       this.updateLivesDisplay();
@@ -39,7 +40,7 @@ export class GameStateManager {
         return true; // Player was killed
       } else {
         this.respawn();
-        return false; // Player wasn't killed but needs to respawn
+        return false; // Player was hit but not killed
       }
     }
   }
@@ -69,23 +70,35 @@ export class GameStateManager {
   }
 
   updateLivesDisplay() {
-    this.livesText.setText(`Lives: ${this.lives}`);
+    if (this.livesText) {
+      this.livesText.setText(`Lives: ${this.lives}`);
+    }
   }
 
   updateScoreDisplay() {
-    this.scoreText.setText(`Score: ${this.score}`);
+    if (this.scoreText) {
+      this.scoreText.setText(`Score: ${this.score}`);
+    }
   }
 
   updateShieldDisplay() {
-    this.shieldText.setText(`Shield: ${this.hasShield ? 'Active' : 'Inactive'}`);
+    if (this.shieldText) {
+      this.shieldText.setText(`Shield: ${this.hasShield ? 'Active' : 'Inactive'}`);
+    }
   }
 
   updateSpeedDisplay() {
-    this.speedText.setText(`Speed: ${this.speedLevel}`);
+    if (this.speedText) {
+      this.speedText.setText(`Speed: ${this.speedLevel}`);
+    }
   }
 
   gameOver() {
-    this.scene.scene.pause();
+    if (this.isGameOver) return;
+    
+    this.isGameOver = true;
+    this.scene.player.setActive(false).setVisible(false);
+    
     const gameOverText = this.scene.add.bitmapText(
       this.scene.game.config.width / 2,
       this.scene.game.config.height / 2,
@@ -101,7 +114,7 @@ export class GameStateManager {
   }
 
   respawn() {
-    this.scene.scene.pause();
+    this.scene.player.setActive(false).setVisible(false);
     let countdown = 3;
     const countdownText = this.scene.add.bitmapText(
       this.scene.game.config.width / 2,
@@ -119,7 +132,9 @@ export class GameStateManager {
           countdownText.setText(countdown.toString());
         } else {
           countdownText.destroy();
-          this.scene.scene.resume();
+          this.scene.player.setActive(true).setVisible(true);
+          this.scene.player.x = 64;
+          this.scene.player.y = 200;
           this.setImmunity();
         }
       },
@@ -130,6 +145,9 @@ export class GameStateManager {
   setImmunity() {
     this.isImmune = true;
     this.scene.player.setAlpha(0.5);
+    if (this.immunityTimer) {
+      this.immunityTimer.remove();
+    }
     this.immunityTimer = this.scene.time.delayedCall(3000, () => {
       this.isImmune = false;
       this.scene.player.setAlpha(1);
