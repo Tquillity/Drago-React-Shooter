@@ -17,7 +17,8 @@ const App = () => {
         physics: {
           default: 'arcade',
           arcade: {
-            gravity: { y: 0 }
+            gravity: { y: 0 },
+            debug: false
           }
         },
         scene: {
@@ -39,17 +40,17 @@ const App = () => {
   }, []);
 
   const preload = function() {
-    this.load.crossOrigin = 'anonymous';
-    this.load.image('background', 'assets/back.png');
-    this.load.image('foreground', 'assets/fore.png');
-    this.load.image('player', 'assets/ship.png');
-    this.load.bitmapFont('shmupfont', 'assets/shmupfont.png', 'assets/shmupfont.xml');
+    this.load.setBaseURL('/src/assets/');
+    this.load.image('background', 'back.png');
+    this.load.image('foreground', 'fore.png');
+    this.load.image('player', 'ship.png');
+    this.load.bitmapFont('shmupfont', 'shmupfont.png', 'shmupfont.xml');
 
     for (let i = 1; i <= 11; i++) {
-      this.load.image('bullet' + i, 'assets/bullet' + i + '.png');
+      this.load.image(`bullet${i}`, `bullet${i}.png`);
     }
 
-    this.load.audio('backgroundMusic', 'assets/sounds/track1.mp3');
+    this.load.audio('backgroundMusic', 'sounds/track1.mp3');
   };
 
   const create = function() {
@@ -57,25 +58,22 @@ const App = () => {
     this.background.setOrigin(0, 0);
     this.background.setScrollFactor(0);
 
-    this.weapons = [];
-    this.weapons.push(new Weapon.SingleBullet(this));
-    this.weapons.push(new Weapon.FrontAndBack(this));
-    this.weapons.push(new Weapon.ThreeWay(this));
-    this.weapons.push(new Weapon.EightWay(this));
-    this.weapons.push(new Weapon.ScatterShot(this));
-    this.weapons.push(new Weapon.Beam(this));
-    this.weapons.push(new Weapon.SplitShot(this));
-    this.weapons.push(new Weapon.Pattern(this));
-    this.weapons.push(new Weapon.Rockets(this));
-    this.weapons.push(new Weapon.ScaleBullet(this));
-    this.weapons.push(new Weapon.Combo1(this));
-    this.weapons.push(new Weapon.Combo2(this));
+    this.weapons = [
+      new Weapon.SingleBullet(this),
+      new Weapon.FrontAndBack(this),
+      new Weapon.ThreeWay(this),
+      new Weapon.EightWay(this),
+      new Weapon.ScatterShot(this),
+      new Weapon.Beam(this),
+      new Weapon.SplitShot(this),
+      new Weapon.Pattern(this),
+      new Weapon.Rockets(this),
+      new Weapon.ScaleBullet(this),
+      new Weapon.Combo1(this),
+      new Weapon.Combo2(this)
+    ];
 
     this.currentWeapon = 0;
-
-    for (let i = 1; i < this.weapons.length; i++) {
-      this.weapons[i].visible = false;
-    }
 
     this.player = this.physics.add.sprite(64, 200, 'player');
     this.player.setCollideWorldBounds(true);
@@ -87,12 +85,48 @@ const App = () => {
     this.weaponName = this.add.bitmapText(8, 364, 'shmupfont', "ENTER = Next Weapon", 24);
 
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.input.keyboard.addCapture([Phaser.Input.Keyboard.KeyCodes.SPACE]);
-
+    this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    
     const changeKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
-    changeKey.on('down', this.nextWeapon, this);
+    changeKey.on('down', () => this.nextWeapon());
 
+    this.sound.pauseOnBlur = false;
     this.music = this.sound.add('backgroundMusic', { loop: true });
+
+    // Start audio on first input
+    this.input.once('pointerdown', () => {
+      if (this.sound.context.state === 'suspended') {
+        this.sound.context.resume();
+      }
+      if (!this.music.isPlaying) {
+        this.music.play();
+      }
+    });
+
+    // Initialize music toggle
+    this.musicPlaying = false;
+    this.toggleMusicCheckbox = document.getElementById('toggleMusic');
+    if (this.toggleMusicCheckbox) {
+      this.toggleMusicCheckbox.addEventListener('change', (event) => {
+        if (event.target.checked) {
+          if (this.sound.context.state === 'suspended') {
+            this.sound.context.resume();
+          }
+          if (!this.music.isPlaying) {
+            this.music.play();
+          }
+          this.musicPlaying = true;
+        } else {
+          this.music.stop();
+          this.musicPlaying = false;
+        }
+      });
+    }
+
+    this.nextWeapon = function() {
+      this.currentWeapon = (this.currentWeapon + 1) % this.weapons.length;
+      this.weaponName.setText(this.weapons[this.currentWeapon].name);
+    };
   };
 
   const update = function() {
@@ -113,39 +147,12 @@ const App = () => {
       this.player.setVelocityY(300);
     }
 
-    if (this.input.keyboard.checkDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE))) {
+    if (this.spaceKey.isDown) {
       this.weapons[this.currentWeapon].fire(this.player);
     }
-  };
 
-  const nextWeapon = function() {
-    if (this.currentWeapon > 9) {
-      this.weapons[this.currentWeapon].reset();
-    } else {
-      this.weapons[this.currentWeapon].visible = false;
-      this.weapons[this.currentWeapon].callAll('reset', null, 0, 0);
-      this.weapons[this.currentWeapon].setAll('exists', false);
-    }
-
-    this.currentWeapon++;
-
-    if (this.currentWeapon === this.weapons.length) {
-      this.currentWeapon = 0;
-    }
-
-    this.weapons[this.currentWeapon].visible = true;
-    this.weaponName.text = this.weapons[this.currentWeapon].name;
-  };
-
-  const toggleMusic = (event) => {
-    if (game.current) {
-      const scene = game.current.scene.scenes[0];
-      if (event.target.checked) {
-        scene.music.play();
-      } else {
-        scene.music.stop();
-      }
-    }
+    // Update weapon name display
+    this.weaponName.setText(this.weapons[this.currentWeapon].name);
   };
 
   return (
@@ -153,7 +160,7 @@ const App = () => {
       <h1>Phaser Game in React</h1>
       <div ref={gameRef} id="game"></div>
       <div id="musicToggle">
-        <input type="checkbox" onChange={toggleMusic} />
+        <input type="checkbox" id="toggleMusic" />
         <span className="slider round">Music On/Off</span>
       </div>
     </div>

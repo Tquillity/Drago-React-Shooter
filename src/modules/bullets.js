@@ -1,32 +1,40 @@
-// filename: bullets.js
+export class Bullet extends Phaser.Physics.Arcade.Sprite {
+    constructor(scene, x, y, texture) {
+        super(scene, x, y, texture);
 
-export class Bullet extends Phaser.GameObjects.Sprite {
-  constructor(scene, x, y, texture) {
-    super(scene, x, y, texture);
+        scene.add.existing(this);
+        scene.physics.add.existing(this);
 
-    this.setTexture(texture);
-    this.setPosition(x, y);
-    this.speed = Phaser.Math.GetSpeed(400, 1);
-  }
-
-  fire(x, y, angle) {
-    this.setActive(true);
-    this.setVisible(true);
-    this.setPosition(x, y);
-    this.setRotation(angle);
-    
-    this.dx = Math.cos(angle);
-    this.dy = Math.sin(angle);
-  }
-
-  update(time, delta) {
-    this.x += this.dx * (this.speed * delta);
-    this.y += this.dy * (this.speed * delta);
-
-    if (this.x < -50 || this.x > this.scene.game.config.width + 50 ||
-        this.y < -50 || this.y > this.scene.game.config.height + 50) {
-      this.setActive(false);
-      this.setVisible(false);
+        this.speed = 1000;
+        this.born = 0;
+        this.direction = 0;
+        this.xSpeed = 0;
+        this.ySpeed = 0;
+        
+        // Only set size if body exists
+        if (this.body) {
+        this.setSize(12, 12);
+        }
     }
-  }
-}
+
+    fire(x, y, angle) {
+        this.setPosition(x, y);
+        this.setActive(true);
+        this.setVisible(true);
+
+        this.direction = angle;
+        this.xSpeed = this.speed * Math.cos(this.direction);
+        this.ySpeed = this.speed * Math.sin(this.direction);
+        this.born = 0;
+    }
+
+    update(time, delta) {
+        this.x += this.xSpeed * delta / 1000;
+        this.y += this.ySpeed * delta / 1000;
+        this.born += delta;
+        if (this.born > 1500) {
+        this.setActive(false);
+        this.setVisible(false);
+        }
+    }
+  } 
