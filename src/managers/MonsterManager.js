@@ -48,14 +48,15 @@ export class MonsterManager {
   }
 
   playerMonsterCollision(player, monster) {
-    const killed = this.scene.gameState.hit(monster.type);
-    if (killed) {
-      // ! Player death logic
-    }
-    if (monster.type === 'small') {
-      monster.destroy();
-    } else {
-      monster.takeDamage(1);
+    if (!this.scene.gameState.isImmune) {
+      const killed = this.scene.gameState.hit(monster.type);
+      if (!killed) {
+        if (monster.type === 'small') {
+          monster.destroy();
+        } else {
+          monster.takeDamage(1);
+        }
+      }
     }
   }
 
