@@ -7,10 +7,10 @@ export class GameStateManager {
     this.score = 0;
     this.hasShield = false;
     this.speedLevel = 1;
-    this.livesText = null;
-    this.scoreText = null;
-    this.shieldText = null;
-    this.speedText = null;
+    this.livesText = 3;
+    this.scoreText = 0;
+    this.shieldText = 'OFF';
+    this.speedText = 1;
     this.isImmune = false;
     this.immunityTimer = null;
     this.isGameOver = false;
@@ -19,7 +19,7 @@ export class GameStateManager {
   create() {
     this.livesText = this.scene.add.bitmapText(10, 10, 'shmupfont', `Lives: ${this.lives}`, 12);
     this.scoreText = this.scene.add.bitmapText(10, 30, 'shmupfont', `Score: ${this.score}`, 12);
-    this.shieldText = this.scene.add.bitmapText(10, 50, 'shmupfont', `Shield: ${this.hasShield ? 'Active' : 'Inactive'}`, 12);
+    this.shieldText = this.scene.add.bitmapText(10, 50, 'shmupfont', `Shield: ${this.hasShield ? 'ON' : 'OFF'}`, 12);
     this.speedText = this.scene.add.bitmapText(10, 70, 'shmupfont', `Speed: ${this.speedLevel}`, 12);
   }
 
@@ -70,20 +70,26 @@ export class GameStateManager {
   }
 
   updateLivesDisplay() {
+    console.log('Updating lives display', this.lives);
     if (this.livesText) {
       this.livesText.setText(`Lives: ${this.lives}`);
+    } else {
+      console.error('Lives text object is not defined');
     }
   }
-
+  
   updateScoreDisplay() {
+    console.log('Updating score display', this.score);
     if (this.scoreText) {
       this.scoreText.setText(`Score: ${this.score}`);
+    } else {
+      console.error('Score text object is not defined');
     }
   }
 
   updateShieldDisplay() {
     if (this.shieldText) {
-      this.shieldText.setText(`Shield: ${this.hasShield ? 'Active' : 'Inactive'}`);
+      this.shieldText.setText(`Shield: ${this.hasShield ? 'ON' : 'OFF'}`);
     }
   }
 

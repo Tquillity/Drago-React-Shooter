@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import { Weapon } from './modules/weapons';
-import { Bullet } from './modules/bullets';
 import { GameStateManager } from './managers/GameStateManager';
 import { PowerUpManager } from './managers/PowerUpManager';
 import { MonsterManager } from './managers/MonsterManager';
@@ -67,6 +66,12 @@ const App = () => {
     this.load.image('monster_boss', 'monster_boss.png');
 
     this.load.audio('backgroundMusic', 'sounds/track1.mp3');
+
+    this.load.start();
+
+    this.load.on('complete', () => {
+      console.log('All assets loaded');
+    });
   };
 
   const create = function() {
@@ -112,7 +117,7 @@ const App = () => {
     // Initialize GameStateManager
     this.gameState = new GameStateManager(this);
     this.gameState.create();
-    this.gameState.scene.player = this.player; // Move this line here
+    this.gameState.scene.player = this.player;
 
     // Initialize PowerUpManager
     this.powerUpManager = new PowerUpManager(this);
@@ -212,6 +217,12 @@ const App = () => {
         monster.destroy();
       }
     });
+
+    // Update game state displays
+    this.gameState.updateLivesDisplay();
+    this.gameState.updateScoreDisplay();
+    this.gameState.updateShieldDisplay();
+    this.gameState.updateSpeedDisplay();
 
     // Update weapon name display
     this.weaponName.setText(this.weapons[this.currentWeapon].name);
