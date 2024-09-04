@@ -1,0 +1,34 @@
+.start-screen {
+  position: relative;
+  
+  img {
+    width: 100%;
+    height: auto;
+  }
+
+  .button-container {
+    position: absolute;
+    top: 70%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    gap: 20px;
+  }
+
+  button {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+
+    &.free-game {
+      background-color: #4CAF50;
+    }
+
+    &.paid-game {
+      background-color: #008CBA;
+    }
+  }
+}

@@ -19,7 +19,7 @@ export class GameStateManager {
 
   create() {
     this.livesText = this.scene.add.bitmapText(10, 10, 'shmupfont', `Lives: ${this.lives}`, 12);
-    this.scoreText = this.scene.add.bitmapText(10, 30, 'shmupfont', `Score: 1234567890 ${this.score}`, 36);
+    this.scoreText = this.scene.add.bitmapText(10, 30, 'shmupfont', `Score: ${this.score}`, 12);
     this.shieldText = this.scene.add.bitmapText(10, 50, 'shmupfont', `Shield: ${this.hasShield ? 'ON' : 'OFF'}`, 12);
     this.speedText = this.scene.add.bitmapText(10, 70, 'shmupfont', `Speed: ${this.speedLevel}`, 12);
   }

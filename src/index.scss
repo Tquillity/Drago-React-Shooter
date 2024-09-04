@@ -1,3 +1,9 @@
+
+// Main styling
 @import './style/main';
 @import './style/musicToggle.scss';
-@import './style/startScreen.scss';
+
+// components styling
+@import './style/components/gameScreen.scss';
+@import './style/components/gameOverScreen.scss';
+@import './style/components/startScreen.scss';

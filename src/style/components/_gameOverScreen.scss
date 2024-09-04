@@ -1,0 +1,50 @@
+.game-over-screen {
+  position: relative;
+
+  img {
+    width: 100%;
+    height: auto;
+  }
+
+  .content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: white;
+  }
+
+  h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  p {
+    font-size: 20px;
+    margin-bottom: 30px;
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  button {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+
+    &.free-game {
+      background-color: #4CAF50;
+    }
+
+    &.paid-game {
+      background-color: #008CBA;
+    }
+  }
+}
