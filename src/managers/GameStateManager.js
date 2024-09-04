@@ -7,13 +7,14 @@ export class GameStateManager {
     this.score = 0;
     this.hasShield = false;
     this.speedLevel = 1;
-    this.livesText = 3;
-    this.scoreText = 0;
-    this.shieldText = 'OFF';
-    this.speedText = 1;
+    this.livesText = null;
+    this.scoreText = null;
+    this.shieldText = null;
+    this.speedText = null;
     this.isImmune = false;
     this.immunityTimer = null;
     this.isGameOver = false;
+    this.onGameOver = null; // Callback function to be set from App.jsx
   }
 
   create() {
@@ -58,8 +59,10 @@ export class GameStateManager {
   }
 
   setShield(hasShield) {
-    this.hasShield = hasShield;
-    this.updateShieldDisplay();
+    if (this.hasShield !== hasShield) {
+      this.hasShield = hasShield;
+      this.updateShieldDisplay();
+    }
   }
 
   increaseSpeed() {
@@ -113,9 +116,11 @@ export class GameStateManager {
       64
     ).setOrigin(0.5);
 
-    this.scene.time.delayedCall(3000, () => {
+    this.scene.time.delayedCall(2000, () => {
       gameOverText.destroy();
-      this.scene.scene.restart();
+      if (this.onGameOver) {
+        this.onGameOver(this.score);
+      }
     });
   }
 
@@ -158,5 +163,9 @@ export class GameStateManager {
       this.isImmune = false;
       this.scene.player.setAlpha(1);
     });
+  }
+
+  setGameOverCallback(callback) {
+    this.onGameOver = callback;
   }
 }

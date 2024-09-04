@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Phaser from 'phaser';
 import { Weapon } from './modules/weapons';
 import { GameStateManager } from './managers/GameStateManager';
@@ -6,12 +6,42 @@ import { PowerUpManager } from './managers/PowerUpManager';
 import { MonsterManager } from './managers/MonsterManager';
 import { WaveManager } from './managers/WaveManager';
 
+const StartScreen = ({ onStartFreeGame, onStartPaidGame }) => {
+  return (
+    <div className="start-screen">
+      <h1>Welcome to Space Shooter</h1>
+      <img src="/src/assets/startScreen.jpg" alt="Game Start" />
+      <div className="button-container">
+        <button onClick={onStartFreeGame}>Free Training Game</button>
+        <button onClick={onStartPaidGame}>Paid Competitive Game</button>
+      </div>
+    </div>
+  );
+};
+
+const GameOverScreen = ({ lastScore, onStartFreeGame, onStartPaidGame }) => {
+  return (
+    <div className="game-over-screen">
+      <h1>Game Over</h1>
+      <h2>Your Score: {lastScore}</h2>
+      <img src="/src/assets/GameOverScreen.jpg" alt="Game Over" />
+      <div className="button-container">
+        <button onClick={onStartFreeGame}>Free Training Game</button>
+        <button onClick={onStartPaidGame}>Paid Competitive Game</button>
+      </div>
+    </div>
+  );
+};
+
 const App = () => {
   const gameRef = useRef(null);
   const game = useRef(null);
+  const [gameState, setGameState] = useState('start'); // 'start', 'playing', or 'gameOver'
+  const [gameMode, setGameMode] = useState(null);
+  const [lastScore, setLastScore] = useState(null);
 
   useEffect(() => {
-    if (gameRef.current && !game.current) {
+    if (gameRef.current && !game.current && gameState === 'playing') {
       const config = {
         type: Phaser.AUTO,
         width: 640,
@@ -40,7 +70,22 @@ const App = () => {
         game.current = null;
       }
     };
-  }, []);
+  }, [gameState]);
+
+  const startFreeGame = () => {
+    setGameMode('free');
+    setGameState('playing');
+  };
+
+  const startPaidGame = () => {
+    setGameMode('paid');
+    setGameState('playing');
+  };
+
+  const handleGameOver = (score) => {
+    setLastScore(score);
+    setGameState('gameOver');
+  };
 
   const preload = function() {
     this.load.setBaseURL('/src/assets/');
@@ -114,9 +159,10 @@ const App = () => {
     this.sound.pauseOnBlur = false;
     this.music = this.sound.add('backgroundMusic', { loop: true });
 
-    // Initialize GameStateManager
+   // Initialize GameStateManager
     this.gameState = new GameStateManager(this);
     this.gameState.create();
+    this.gameState.setGameOverCallback(handleGameOver);
     this.gameState.scene.player = this.player;
 
     // Initialize PowerUpManager
@@ -185,52 +231,60 @@ const App = () => {
       },
       loop: true
     });
+
+    // ! Add game mode specific logic, placeholder consol.log for now
+    if (gameMode === 'paid') {
+      console.log('Paid game mode activated');
+    }
   };
 
   const update = function() {
     this.background.tilePositionX += 0.5;
     this.foreground.tilePositionX += 1;
-
+  
     this.player.setVelocity(0);
-
+  
     const speed = 300 * this.gameState.speedLevel / 5; // Adjust speed based on speedLevel
-
+  
     if (this.cursors.left.isDown) {
       this.player.setVelocityX(-speed);
     } else if (this.cursors.right.isDown) {
       this.player.setVelocityX(speed);
     }
-
+  
     if (this.cursors.up.isDown) {
       this.player.setVelocityY(-speed);
     } else if (this.cursors.down.isDown) {
       this.player.setVelocityY(speed);
     }
-
+  
     if (this.spaceKey.isDown) {
       this.weapons[this.currentWeapon].fire(this.player);
     }
-
+  
     // Remove off-screen monsters
     this.monsterManager.monsters.getChildren().forEach((monster) => {
       if (monster.x < -monster.width) {
         monster.destroy();
       }
     });
-
-    // Update game state displays
-    this.gameState.updateLivesDisplay();
-    this.gameState.updateScoreDisplay();
-    this.gameState.updateShieldDisplay();
-    this.gameState.updateSpeedDisplay();
-
+  
     // Update weapon name display
     this.weaponName.setText(this.weapons[this.currentWeapon].name);
   };
+  
+
+  if (gameState === 'start') {
+    return <StartScreen onStartFreeGame={startFreeGame} onStartPaidGame={startPaidGame} />;
+  }
+
+  if (gameState === 'gameOver') {
+    return <GameOverScreen lastScore={lastScore} onStartFreeGame={startFreeGame} onStartPaidGame={startPaidGame} />;
+  }
 
   return (
     <div>
-      <h1>Phaser Game in React</h1>
+      <h1>Space Shooter</h1>
       <div ref={gameRef} id="game"></div>
       <div id="musicToggle">
         <input type="checkbox" id="toggleMusic" />
@@ -239,5 +293,4 @@ const App = () => {
     </div>
   );
 };
-
 export default App;
