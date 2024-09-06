@@ -16,6 +16,9 @@ const GameScreen = ({ onGameOver, gameMode }) => {
   const [contract, setContract] = useState(null);
   const [signer, setSigner] = useState(null);
   const [isEventActive, setIsEventActive] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [canStartGame, setCanStartGame] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const initializeEthers = async () => {
@@ -33,31 +36,49 @@ const GameScreen = ({ onGameOver, gameMode }) => {
           const eventActive = await contractInstance.eventActive();
           setIsEventActive(eventActive);
           setShowStats(eventActive);
+
+          if (gameMode === 'free') {
+            setCanStartGame(true);
+          } else if (eventActive) {
+            setCanStartGame(true);
+          }
         } catch (error) {
           console.error("Error initializing ethers:", error);
+          setError("Failed to connect to MetaMask. Please make sure it's installed and unlocked.");
         }
       } else {
-        console.log("Ethereum object not found, install MetaMask.");
+        setError("MetaMask not detected. Please install MetaMask to play paid games.");
       }
     };
 
     initializeEthers();
-  }, []);
+  }, [gameMode]);
 
   const startPaidGame = async () => {
-    if (!contract) return;
+    if (!contract) {
+      setError("Contract not initialized. Please try refreshing the page.");
+      return;
+    }
 
+    setIsLoading(true);
+    setError(null);
     try {
       const eventActive = await contract.eventActive();
+      let tx;
       if (eventActive) {
-        await contract.joinGame({ value: ethers.parseEther("0.01") });
+        tx = await contract.joinGame({ value: ethers.parseEther("0.01") });
       } else {
-        await contract.startGame({ value: ethers.parseEther("0.01") });
+        tx = await contract.startGame({ value: ethers.parseEther("0.01") });
       }
+      await tx.wait();
       setIsEventActive(true);
       setShowStats(true);
+      setCanStartGame(true);
     } catch (error) {
       console.error("Error starting/joining paid game:", error);
+      setError("Failed to start/join the game. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -90,6 +111,8 @@ const GameScreen = ({ onGameOver, gameMode }) => {
   };
 
   useEffect(() => {
+    if (!canStartGame) return;
+
     const config = {
       type: Phaser.AUTO,
       width: 640,
@@ -318,7 +341,35 @@ const GameScreen = ({ onGameOver, gameMode }) => {
         game.current = null;
       }
     };
-  }, [onGameOver, gameMode, contract, isEventActive, signer]);
+  }, [onGameOver, gameMode, contract, isEventActive, signer, canStartGame]);
+
+  useEffect(() => {
+    if (gameMode === 'paid' && !isEventActive && !isLoading && !canStartGame) {
+      startPaidGame();
+    }
+  }, [gameMode, isEventActive, isLoading, canStartGame]);
+
+  if (isLoading) {
+    return (
+      <div className="loading-screen">
+        <h2>Processing Transaction</h2>
+        <p>Please wait while we confirm your entry fee payment...</p>
+      </div>
+    );
+  }
+
+  if (!canStartGame && gameMode === 'paid') {
+    return (
+      <div className="waiting-screen">
+        <h2>Ready to Start Paid Game</h2>
+        <p>Click the button below to pay the entry fee and start the game.</p>
+        <button onClick={startPaidGame} disabled={isLoading}>
+          {isLoading ? 'Processing...' : 'Pay Entry Fee and Start Game'}
+        </button>
+        {error && <p className="error-message">{error}</p>}
+      </div>
+    );
+  }
 
   return (
     <div className="game-screen">
