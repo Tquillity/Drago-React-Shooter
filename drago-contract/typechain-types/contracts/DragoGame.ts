@@ -48,6 +48,7 @@ export interface DragoGameInterface extends Interface {
     nameOrSignatureOrTopic:
       | "EventClosedByAdmin"
       | "EventEnded"
+      | "FeesWithdrawn"
       | "GameStarted"
       | "NewHighScore"
       | "OwnershipTransferred"
@@ -178,6 +179,19 @@ export namespace EventEndedEvent {
   export interface OutputObject {
     winner: string;
     winningScore: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace FeesWithdrawnEvent {
+  export type InputTuple = [owner: AddressLike, amount: BigNumberish];
+  export type OutputTuple = [owner: string, amount: bigint];
+  export interface OutputObject {
+    owner: string;
+    amount: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -443,6 +457,13 @@ export interface DragoGame extends BaseContract {
     EventEndedEvent.OutputObject
   >;
   getEvent(
+    key: "FeesWithdrawn"
+  ): TypedContractEvent<
+    FeesWithdrawnEvent.InputTuple,
+    FeesWithdrawnEvent.OutputTuple,
+    FeesWithdrawnEvent.OutputObject
+  >;
+  getEvent(
     key: "GameStarted"
   ): TypedContractEvent<
     GameStartedEvent.InputTuple,
@@ -499,6 +520,17 @@ export interface DragoGame extends BaseContract {
       EventEndedEvent.InputTuple,
       EventEndedEvent.OutputTuple,
       EventEndedEvent.OutputObject
+    >;
+
+    "FeesWithdrawn(address,uint256)": TypedContractEvent<
+      FeesWithdrawnEvent.InputTuple,
+      FeesWithdrawnEvent.OutputTuple,
+      FeesWithdrawnEvent.OutputObject
+    >;
+    FeesWithdrawn: TypedContractEvent<
+      FeesWithdrawnEvent.InputTuple,
+      FeesWithdrawnEvent.OutputTuple,
+      FeesWithdrawnEvent.OutputObject
     >;
 
     "GameStarted(uint256)": TypedContractEvent<

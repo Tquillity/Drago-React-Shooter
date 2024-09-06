@@ -29,6 +29,7 @@ contract DragoGame is ReentrancyGuard, Ownable {
     event EventEnded(address winner, uint256 winningScore);
     event EventClosedByAdmin(address highestScorer, uint256 highestScore);
     event ScoreSubmitted(address player, uint256 score);
+    event FeesWithdrawn(address owner, uint256 amount);
 
     constructor() Ownable(msg.sender) {}
 
@@ -106,7 +107,12 @@ function submitScore(uint256 score) external nonReentrant {
 
     function withdrawFees() external onlyOwner {
         uint256 balance = address(this).balance;
-        payable(owner()).transfer(balance);
+        require(balance > 0, "No fees to withdraw");
+        
+        (bool success, ) = payable(owner()).call{value: balance}("");
+        require(success, "Transfer failed");
+
+        emit FeesWithdrawn(owner(), balance);
     }
 
     function getCurrentEventDetails() external view returns (

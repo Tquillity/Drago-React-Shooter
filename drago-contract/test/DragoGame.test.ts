@@ -107,14 +107,34 @@ describe("DragoGame", function () {
   });
 
   it("Should allow the owner to withdraw fees", async function () {
+    // Start a game and have a player join to add funds to the contract
     await dragoGame.connect(player1).startGame({ value: ENTRY_FEE });
     await dragoGame.connect(player2).joinGame({ value: ENTRY_FEE });
 
-    const initialBalance = await ethers.provider.getBalance(owner.address);
-    await dragoGame.connect(owner).withdrawFees();
-    const finalBalance = await ethers.provider.getBalance(owner.address);
+    const initialContractBalance = await ethers.provider.getBalance(await dragoGame.getAddress());
+    const initialOwnerBalance = await ethers.provider.getBalance(owner.address);
 
-    expect(finalBalance).to.be.gt(initialBalance);
+    // Withdraw fees
+    await expect(dragoGame.connect(owner).withdrawFees())
+      .to.emit(dragoGame, "FeesWithdrawn")
+      .withArgs(owner.address, initialContractBalance);
+
+    // Check contract balance is now 0
+    expect(await ethers.provider.getBalance(await dragoGame.getAddress())).to.equal(0);
+
+    // Check owner balance has increased (approximately, accounting for gas costs)
+    const finalOwnerBalance = await ethers.provider.getBalance(owner.address);
+    expect(finalOwnerBalance).to.be.gt(initialOwnerBalance);
+
+    // Attempt to withdraw again, should fail
+    await expect(dragoGame.connect(owner).withdrawFees()).to.be.revertedWith("No fees to withdraw");
+  });
+
+  it("Should not allow non-owners to withdraw fees", async function () {
+    await dragoGame.connect(player1).startGame({ value: ENTRY_FEE });
+    await expect(dragoGame.connect(player1).withdrawFees())
+      .to.be.revertedWithCustomError(dragoGame, "OwnableUnauthorizedAccount")
+      .withArgs(player1.address);
   });
 
   describe("adminCloseEvent", function () {
