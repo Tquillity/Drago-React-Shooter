@@ -1,0 +1,49 @@
+.admin-button {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.admin-button:hover {
+  background-color: #45a049;
+}
+
+.admin-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.5);
+}
+
+.connect-button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.connect-button:hover {
+  background-color: #45a049;
+}
+
+.connect-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #ff0000;
+  margin-top: 10px;
+}

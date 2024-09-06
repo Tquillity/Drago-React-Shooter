@@ -1,0 +1,41 @@
+.withdraw-fees-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  font-family: Arial, sans-serif;
+
+  h2 {
+    color: #333;
+    text-align: center;
+  }
+
+  p {
+    margin: 10px 0;
+    color: #666;
+  }
+
+  .withdraw-button, .check-owner-button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+
+    &:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: #45a049;
+    }
+  }
+}
