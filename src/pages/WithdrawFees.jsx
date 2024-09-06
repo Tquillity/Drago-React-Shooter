@@ -13,6 +13,7 @@ export default function WithdrawFees() {
   const [error, setError] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isClosingEvent, setIsClosingEvent] = useState(false);
 
   const connectWallet = async () => {
     setIsConnecting(true);
@@ -111,17 +112,38 @@ export default function WithdrawFees() {
     setIsWithdrawing(false);
   };
 
+  const handleCloseEvent = async () => {
+    if (!contract || !isOwner) return;
+    setIsClosingEvent(true);
+    try {
+      const tx = await contract.adminCloseEvent();
+      await tx.wait();
+      alert('Event closed successfully!');
+      // Should close the event no matter the event state, finished or not for testing purposes
+      // ! This is not recommended for production or perhaps it is??? Have not decided yet :)
+    } catch (error) {
+      console.error('Failed to close event:', error);
+      alert('Failed to close event. See console for details.');
+    }
+    setIsClosingEvent(false);
+  };
+
   return (
     <div className="withdraw-fees-container">
-      <h2>Withdraw Contract Fees</h2>
+      <h2>Admin Controls</h2>
       {isConnected ? (
         <>
           <p>Connected Account: {account}</p>
           <p>Contract Balance: {balance} ETH</p>
           {isOwner ? (
-            <button onClick={handleWithdraw} disabled={isWithdrawing} className="withdraw-button">
-              {isWithdrawing ? 'Withdrawing...' : 'Withdraw Fees'}
-            </button>
+            <>
+              <button onClick={handleWithdraw} disabled={isWithdrawing} className="withdraw-button">
+                {isWithdrawing ? 'Withdrawing...' : 'Withdraw Fees'}
+              </button>
+              <button onClick={handleCloseEvent} disabled={isClosingEvent} className="close-event-button">
+                {isClosingEvent ? 'Closing Event...' : 'Close Current Event'}
+              </button>
+            </>
           ) : (
             <p>You are not the contract owner.</p>
           )}

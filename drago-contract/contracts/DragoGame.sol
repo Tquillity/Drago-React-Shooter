@@ -27,6 +27,7 @@ contract DragoGame is ReentrancyGuard, Ownable {
     event PlayerJoined(address player);
     event NewHighScore(address player, uint256 score);
     event EventEnded(address winner, uint256 winningScore);
+    event EventClosedByAdmin(address highestScorer, uint256 highestScore);
 
     constructor() Ownable(msg.sender) {}
 
@@ -86,6 +87,18 @@ contract DragoGame is ReentrancyGuard, Ownable {
 
         emit EventEnded(winner, winningScore);
 
+        delete currentEvent;
+    }
+
+    function adminCloseEvent() external onlyOwner {
+        require(eventActive, "No active event to close");
+
+        eventActive = false;
+    
+        // Emit an event to log that the admin closed the event
+        emit EventClosedByAdmin(currentEvent.highestScorer, currentEvent.highestScore);
+
+        // Reset the current event
         delete currentEvent;
     }
 

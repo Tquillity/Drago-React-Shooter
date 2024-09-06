@@ -62,10 +62,16 @@ const GameScreen = ({ onGameOver, gameMode }) => {
   };
 
   const submitScore = async (score) => {
-    if (!contract) return;
-
+    if (!contract) {
+      console.error("Contract not initialized");
+      return;
+    }
+  
     try {
-      await contract.submitScore(score);
+      console.log(`Submitting score: ${score}`);
+      const tx = await contract.submitScore(score);
+      await tx.wait();
+      console.log(`Score submitted successfully. Transaction hash: ${tx.hash}`);
     } catch (error) {
       console.error("Error submitting score:", error);
     }

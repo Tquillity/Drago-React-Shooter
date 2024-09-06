@@ -30,6 +30,7 @@ export interface DragoGameInterface extends Interface {
       | "EVENT_DURATION"
       | "MAX_PLAYERS"
       | "PRIZE"
+      | "adminCloseEvent"
       | "currentEvent"
       | "endEventAndClaimPrize"
       | "eventActive"
@@ -45,6 +46,7 @@ export interface DragoGameInterface extends Interface {
 
   getEvent(
     nameOrSignatureOrTopic:
+      | "EventClosedByAdmin"
       | "EventEnded"
       | "GameStarted"
       | "NewHighScore"
@@ -62,6 +64,10 @@ export interface DragoGameInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "PRIZE", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "adminCloseEvent",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "currentEvent",
     values?: undefined
@@ -109,6 +115,10 @@ export interface DragoGameInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "PRIZE", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "adminCloseEvent",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "currentEvent",
     data: BytesLike
   ): Result;
@@ -143,6 +153,22 @@ export interface DragoGameInterface extends Interface {
     functionFragment: "withdrawFees",
     data: BytesLike
   ): Result;
+}
+
+export namespace EventClosedByAdminEvent {
+  export type InputTuple = [
+    highestScorer: AddressLike,
+    highestScore: BigNumberish
+  ];
+  export type OutputTuple = [highestScorer: string, highestScore: bigint];
+  export interface OutputObject {
+    highestScorer: string;
+    highestScore: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace EventEndedEvent {
@@ -259,6 +285,8 @@ export interface DragoGame extends BaseContract {
 
   PRIZE: TypedContractMethod<[], [bigint], "view">;
 
+  adminCloseEvent: TypedContractMethod<[], [void], "nonpayable">;
+
   currentEvent: TypedContractMethod<
     [],
     [
@@ -326,6 +354,9 @@ export interface DragoGame extends BaseContract {
     nameOrSignature: "PRIZE"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
+    nameOrSignature: "adminCloseEvent"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "currentEvent"
   ): TypedContractMethod<
     [],
@@ -384,6 +415,13 @@ export interface DragoGame extends BaseContract {
   ): TypedContractMethod<[], [void], "nonpayable">;
 
   getEvent(
+    key: "EventClosedByAdmin"
+  ): TypedContractEvent<
+    EventClosedByAdminEvent.InputTuple,
+    EventClosedByAdminEvent.OutputTuple,
+    EventClosedByAdminEvent.OutputObject
+  >;
+  getEvent(
     key: "EventEnded"
   ): TypedContractEvent<
     EventEndedEvent.InputTuple,
@@ -420,6 +458,17 @@ export interface DragoGame extends BaseContract {
   >;
 
   filters: {
+    "EventClosedByAdmin(address,uint256)": TypedContractEvent<
+      EventClosedByAdminEvent.InputTuple,
+      EventClosedByAdminEvent.OutputTuple,
+      EventClosedByAdminEvent.OutputObject
+    >;
+    EventClosedByAdmin: TypedContractEvent<
+      EventClosedByAdminEvent.InputTuple,
+      EventClosedByAdminEvent.OutputTuple,
+      EventClosedByAdminEvent.OutputObject
+    >;
+
     "EventEnded(address,uint256)": TypedContractEvent<
       EventEndedEvent.InputTuple,
       EventEndedEvent.OutputTuple,

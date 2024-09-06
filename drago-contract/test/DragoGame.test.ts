@@ -108,4 +108,47 @@ describe("DragoGame", function () {
 
     expect(finalBalance).to.be.gt(initialBalance);
   });
+
+  describe("adminCloseEvent", function () {
+    it("should allow the owner to close an active event", async function () {
+      // Start a game
+      await dragoGame.connect(player1).startGame({ value: ENTRY_FEE });
+      
+      // Submit a score
+      await dragoGame.connect(player1).submitScore(100);
+
+      // Check that the event is active
+      expect(await dragoGame.eventActive()).to.be.true;
+
+      // Close the event as the owner
+      await expect(dragoGame.connect(owner).adminCloseEvent())
+        .to.emit(dragoGame, "EventClosedByAdmin")
+        .withArgs(player1.address, 100);
+
+      // Check that the event is no longer active
+      expect(await dragoGame.eventActive()).to.be.false;
+
+      // Try to start a new game to ensure the event was properly reset
+      await expect(dragoGame.connect(player2).startGame({ value: ENTRY_FEE }))
+        .to.emit(dragoGame, "GameStarted");
+    });
+
+    it("should not allow non-owners to close the event", async function () {
+      // Start a game
+      await dragoGame.connect(player1).startGame({ value: ENTRY_FEE });
+    
+      // Try to close the event as a non-owner
+      await expect(dragoGame.connect(player2).adminCloseEvent())
+        .to.be.revertedWithCustomError(dragoGame, "OwnableUnauthorizedAccount")
+        .withArgs(player2.address);
+    });
+    
+
+    it("should not allow closing an event when no event is active", async function () {
+      // Try to close a non-existent event
+      await expect(dragoGame.connect(owner).adminCloseEvent())
+        .to.be.revertedWith("No active event to close");
+    });
+  });
 });
+
