@@ -5,6 +5,26 @@ export const DRAGO_GAME_ABI = [
     "type": "constructor"
   },
   {
+    "inputs": [],
+    "name": "EventNotActive",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "GameFull",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "IncorrectFee",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotRegistered",
+    "type": "error"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -30,6 +50,25 @@ export const DRAGO_GAME_ABI = [
     "inputs": [],
     "name": "ReentrancyGuardReentrantCall",
     "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "EtherReceived",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -170,6 +209,10 @@ export const DRAGO_GAME_ABI = [
     ],
     "name": "ScoreSubmitted",
     "type": "event"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "fallback"
   },
   {
     "inputs": [],
@@ -318,6 +361,19 @@ export const DRAGO_GAME_ABI = [
   },
   {
     "inputs": [],
+    "name": "getRegisteredPlayers",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "joinGame",
     "outputs": [],
     "stateMutability": "payable",
@@ -326,6 +382,25 @@ export const DRAGO_GAME_ABI = [
   {
     "inputs": [],
     "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "registeredPlayers",
     "outputs": [
       {
         "internalType": "address",
@@ -382,7 +457,11 @@ export const DRAGO_GAME_ABI = [
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
   }
 ];
 
-export const DRAGO_GAME_ADDRESS = '0x53fCdD6A8AdC5B9f7fFA3E30E2F706ec0d6E276C'; // My contract address :D!
+export const DRAGO_GAME_ADDRESS = '0xf6394DE063d77A98859aD78a0ba1B05e0671A94A'; // My contract address :D!

@@ -35,8 +35,10 @@ export interface DragoGameInterface extends Interface {
       | "endEventAndClaimPrize"
       | "eventActive"
       | "getCurrentEventDetails"
+      | "getRegisteredPlayers"
       | "joinGame"
       | "owner"
+      | "registeredPlayers"
       | "renounceOwnership"
       | "startGame"
       | "submitScore"
@@ -46,6 +48,7 @@ export interface DragoGameInterface extends Interface {
 
   getEvent(
     nameOrSignatureOrTopic:
+      | "EtherReceived"
       | "EventClosedByAdmin"
       | "EventEnded"
       | "FeesWithdrawn"
@@ -86,8 +89,16 @@ export interface DragoGameInterface extends Interface {
     functionFragment: "getCurrentEventDetails",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "getRegisteredPlayers",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "joinGame", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "registeredPlayers",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
@@ -136,8 +147,16 @@ export interface DragoGameInterface extends Interface {
     functionFragment: "getCurrentEventDetails",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getRegisteredPlayers",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "joinGame", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "registeredPlayers",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -155,6 +174,19 @@ export interface DragoGameInterface extends Interface {
     functionFragment: "withdrawFees",
     data: BytesLike
   ): Result;
+}
+
+export namespace EtherReceivedEvent {
+  export type InputTuple = [sender: AddressLike, value: BigNumberish];
+  export type OutputTuple = [sender: string, value: bigint];
+  export interface OutputObject {
+    sender: string;
+    value: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace EventClosedByAdminEvent {
@@ -347,9 +379,17 @@ export interface DragoGame extends BaseContract {
     "view"
   >;
 
+  getRegisteredPlayers: TypedContractMethod<[], [string[]], "view">;
+
   joinGame: TypedContractMethod<[], [void], "payable">;
 
   owner: TypedContractMethod<[], [string], "view">;
+
+  registeredPlayers: TypedContractMethod<
+    [arg0: BigNumberish],
+    [string],
+    "view"
+  >;
 
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
@@ -421,11 +461,17 @@ export interface DragoGame extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "getRegisteredPlayers"
+  ): TypedContractMethod<[], [string[]], "view">;
+  getFunction(
     nameOrSignature: "joinGame"
   ): TypedContractMethod<[], [void], "payable">;
   getFunction(
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "registeredPlayers"
+  ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
   getFunction(
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
@@ -442,6 +488,13 @@ export interface DragoGame extends BaseContract {
     nameOrSignature: "withdrawFees"
   ): TypedContractMethod<[], [void], "nonpayable">;
 
+  getEvent(
+    key: "EtherReceived"
+  ): TypedContractEvent<
+    EtherReceivedEvent.InputTuple,
+    EtherReceivedEvent.OutputTuple,
+    EtherReceivedEvent.OutputObject
+  >;
   getEvent(
     key: "EventClosedByAdmin"
   ): TypedContractEvent<
@@ -500,6 +553,17 @@ export interface DragoGame extends BaseContract {
   >;
 
   filters: {
+    "EtherReceived(address,uint256)": TypedContractEvent<
+      EtherReceivedEvent.InputTuple,
+      EtherReceivedEvent.OutputTuple,
+      EtherReceivedEvent.OutputObject
+    >;
+    EtherReceived: TypedContractEvent<
+      EtherReceivedEvent.InputTuple,
+      EtherReceivedEvent.OutputTuple,
+      EtherReceivedEvent.OutputObject
+    >;
+
     "EventClosedByAdmin(address,uint256)": TypedContractEvent<
       EventClosedByAdminEvent.InputTuple,
       EventClosedByAdminEvent.OutputTuple,
