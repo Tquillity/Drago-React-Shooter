@@ -14,7 +14,8 @@ export class GameStateManager {
     this.isImmune = false;
     this.immunityTimer = null;
     this.isGameOver = false;
-    this.onGameOver = null; // Callback function to be set from App.jsx
+    this.onGameOver = null;
+    this.isRespawning = false;
   }
 
   create() {
@@ -25,8 +26,8 @@ export class GameStateManager {
   }
 
   hit(monsterSize) {
-    if (this.isImmune || this.isGameOver) {
-      return false; // Player is immune or game is over
+    if (this.isImmune || this.isGameOver || this.isRespawning) {
+      return false; // Player is immune, game is over, or player is respawning
     }
 
     if (this.hasShield) {
@@ -115,16 +116,12 @@ export class GameStateManager {
       'GAME OVER',
       64
     ).setOrigin(0.5);
-
-    this.scene.time.delayedCall(2000, () => {
-      gameOverText.destroy();
-      if (this.onGameOver) {
-        this.onGameOver(this.score);
-      }
-    });
+  
+    this.scene.events.emit('gameover', this.score);
   }
 
   respawn() {
+    this.isRespawning = true;  // Set respawning state
     this.scene.player.setActive(false).setVisible(false);
     let countdown = 3;
     const countdownText = this.scene.add.bitmapText(
@@ -147,6 +144,7 @@ export class GameStateManager {
           this.scene.player.x = 64;
           this.scene.player.y = 200;
           this.setImmunity();
+          this.isRespawning = false;  // Reset respawning state
         }
       },
       repeat: 2

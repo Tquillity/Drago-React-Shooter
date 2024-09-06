@@ -23,8 +23,10 @@ const App = () => {
   };
 
   const handleGameOver = (score) => {
+    console.log(`App received game over. Score: ${score}`); // Debugging
     setLastScore(score);
     setGameState('gameOver');
+    console.log(`Game state set to: ${gameState}`); // Debugging
   };
 
   const toggleAdminPanel = () => {
@@ -34,7 +36,11 @@ const App = () => {
     } else {
       setGameState('start');
     }
+    console.log(`Admin panel toggled. Show admin: ${!showAdminPanel}`); // Debugging
   };
+
+  console.log(`Current game state: ${gameState}`); // Debugging
+  console.log(`Current game mode: ${gameMode}`); // Debugging
 
   const renderGameContent = () => {
     switch (gameState) {
@@ -53,8 +59,8 @@ const App = () => {
 
   return (
     <div className="App">
-      <button 
-        onClick={toggleAdminPanel} 
+      <button
+        onClick={toggleAdminPanel}
         className="admin-button"
       >
         {showAdminPanel ? 'Back to Game' : 'Admin Panel'}

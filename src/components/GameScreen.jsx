@@ -241,6 +241,7 @@ const GameScreen = ({ onGameOver, gameMode }) => {
         if (gameMode === 'paid') {
           submitScore(score);
         }
+        console.log('Calling onGameOver prop'); // Debugging
         onGameOver(score);
       });
     
@@ -298,7 +299,7 @@ const GameScreen = ({ onGameOver, gameMode }) => {
         this.player.setVelocityY(speed);
       }
     
-      if (this.spaceKey.isDown) {
+      if (this.spaceKey.isDown && !this.gameState.isRespawning) {
         this.weapons[this.currentWeapon].fire(this.player);
       }
     
