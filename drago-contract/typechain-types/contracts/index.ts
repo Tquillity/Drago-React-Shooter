@@ -2,4 +2,3 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { DragoGame } from "./DragoGame";
-export type { Lock } from "./Lock";

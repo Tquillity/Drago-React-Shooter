@@ -25,10 +25,6 @@ declare module "hardhat/types/runtime" {
       name: "DragoGame",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.DragoGame__factory>;
-    getContractFactory(
-      name: "Lock",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Lock__factory>;
 
     getContractAt(
       name: "Ownable",
@@ -45,11 +41,6 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.DragoGame>;
-    getContractAt(
-      name: "Lock",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.Lock>;
 
     deployContract(
       name: "Ownable",
@@ -63,10 +54,6 @@ declare module "hardhat/types/runtime" {
       name: "DragoGame",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.DragoGame>;
-    deployContract(
-      name: "Lock",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Lock>;
 
     deployContract(
       name: "Ownable",
@@ -83,11 +70,6 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.DragoGame>;
-    deployContract(
-      name: "Lock",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Lock>;
 
     // default types
     getContractFactory(

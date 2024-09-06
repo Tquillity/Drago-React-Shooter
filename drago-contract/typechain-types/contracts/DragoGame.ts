@@ -52,6 +52,7 @@ export interface DragoGameInterface extends Interface {
       | "NewHighScore"
       | "OwnershipTransferred"
       | "PlayerJoined"
+      | "ScoreSubmitted"
   ): EventFragment;
 
   encodeFunctionData(functionFragment: "ENTRY_FEE", values?: undefined): string;
@@ -227,6 +228,19 @@ export namespace PlayerJoinedEvent {
   export type OutputTuple = [player: string];
   export interface OutputObject {
     player: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace ScoreSubmittedEvent {
+  export type InputTuple = [player: AddressLike, score: BigNumberish];
+  export type OutputTuple = [player: string, score: bigint];
+  export interface OutputObject {
+    player: string;
+    score: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -456,6 +470,13 @@ export interface DragoGame extends BaseContract {
     PlayerJoinedEvent.OutputTuple,
     PlayerJoinedEvent.OutputObject
   >;
+  getEvent(
+    key: "ScoreSubmitted"
+  ): TypedContractEvent<
+    ScoreSubmittedEvent.InputTuple,
+    ScoreSubmittedEvent.OutputTuple,
+    ScoreSubmittedEvent.OutputObject
+  >;
 
   filters: {
     "EventClosedByAdmin(address,uint256)": TypedContractEvent<
@@ -522,6 +543,17 @@ export interface DragoGame extends BaseContract {
       PlayerJoinedEvent.InputTuple,
       PlayerJoinedEvent.OutputTuple,
       PlayerJoinedEvent.OutputObject
+    >;
+
+    "ScoreSubmitted(address,uint256)": TypedContractEvent<
+      ScoreSubmittedEvent.InputTuple,
+      ScoreSubmittedEvent.OutputTuple,
+      ScoreSubmittedEvent.OutputObject
+    >;
+    ScoreSubmitted: TypedContractEvent<
+      ScoreSubmittedEvent.InputTuple,
+      ScoreSubmittedEvent.OutputTuple,
+      ScoreSubmittedEvent.OutputObject
     >;
   };
 }

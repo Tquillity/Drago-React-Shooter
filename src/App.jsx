@@ -13,6 +13,7 @@ const App = () => {
   const [lastScore, setLastScore] = useState(0);
   const [gameMode, setGameMode] = useState(null);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [canStartGame, setCanStartGame] = useState(true);
 
   const startFreeGame = () => {
     setGameMode('free');
@@ -24,6 +25,7 @@ const App = () => {
     setGameMode('paid');
     setGameState('playing');
     setShowAdminPanel(false);
+    setCanStartGame(false);
   };
 
   const handleGameOver = (score) => {

@@ -70,14 +70,14 @@ describe("DragoGame", function () {
     await dragoGame.connect(player1).submitScore(200);
     
     await expect(dragoGame.connect(player1).submitScore(300))
-      .to.be.revertedWith("No more scores to submit");
-
+      .to.be.revertedWith("No more scores to submit for this entry");
+  
     const eventDetails = await dragoGame.getCurrentEventDetails();
     expect(eventDetails.submittedScores).to.equal(2);
     expect(eventDetails.highestScore).to.equal(200);
   });
 
-  it("Should end the game after all scores have been submitted", async function () {
+  it("Should end the event after all scores have been submitted", async function () {
     await dragoGame.connect(player1).startGame({ value: ENTRY_FEE });
     await dragoGame.connect(player1).joinGame({ value: ENTRY_FEE });
     await dragoGame.connect(player1).joinGame({ value: ENTRY_FEE });
@@ -96,6 +96,14 @@ describe("DragoGame", function () {
     expect(player1BalanceAfter).to.be.gt(player1BalanceBefore);
 
     expect(await dragoGame.eventActive()).to.be.false;
+  });
+
+  it("Should emit ScoreSubmitted event when submitting a score", async function () {
+    await dragoGame.connect(player1).startGame({ value: ENTRY_FEE });
+    
+    await expect(dragoGame.connect(player1).submitScore(100))
+      .to.emit(dragoGame, "ScoreSubmitted")
+      .withArgs(player1.address, 100);
   });
 
   it("Should allow the owner to withdraw fees", async function () {

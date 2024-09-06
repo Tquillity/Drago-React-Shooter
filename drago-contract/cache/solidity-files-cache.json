@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/home/digislinger/DevArea/PrivateDev/Drago-Scroller-React/drago-contract/contracts/DragoGame.sol": {
-      "lastModificationDate": 1725599347151,
-      "contentHash": "260572aa8babbc7779101d7da5b457b2",
+      "lastModificationDate": 1725611063451,
+      "contentHash": "c6762d8073844ecf4b47512b33e97ee8",
       "sourceName": "contracts/DragoGame.sol",
       "solcConfig": {
         "version": "0.8.26",
@@ -148,42 +148,6 @@
       ],
       "artifacts": [
         "Context"
-      ]
-    },
-    "/home/digislinger/DevArea/PrivateDev/Drago-Scroller-React/drago-contract/contracts/Lock.sol": {
-      "lastModificationDate": 1725522418208,
-      "contentHash": "dacf0d5cb5b45dc83086de5bc1c26c2c",
-      "sourceName": "contracts/Lock.sol",
-      "solcConfig": {
-        "version": "0.8.26",
-        "settings": {
-          "evmVersion": "paris",
-          "optimizer": {
-            "enabled": false,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "Lock"
       ]
     }
   }

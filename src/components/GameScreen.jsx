@@ -54,12 +54,28 @@ const GameScreen = ({ onGameOver, gameMode }) => {
     initializeEthers();
   }, [gameMode]);
 
+  const checkGameState = async () => {
+    if (!contract) return;
+    try {
+      const eventActive = await contract.eventActive();
+      const eventDetails = await contract.getCurrentEventDetails();
+      console.log('Current game state:', {
+        eventActive,
+        playerCount: eventDetails.playerCount.toString(),
+        submittedScores: eventDetails.submittedScores.toString(),
+        highestScore: eventDetails.highestScore.toString()
+      });
+    } catch (error) {
+      console.error('Error checking game state:', error);
+    }
+  };
+
   const startPaidGame = async () => {
     if (!contract) {
       setError("Contract not initialized. Please try refreshing the page.");
       return;
     }
-
+  
     setIsLoading(true);
     setError(null);
     try {
@@ -74,6 +90,7 @@ const GameScreen = ({ onGameOver, gameMode }) => {
       setIsEventActive(true);
       setShowStats(true);
       setCanStartGame(true);
+      await checkGameState();
     } catch (error) {
       console.error("Error starting/joining paid game:", error);
       setError("Failed to start/join the game. Please try again.");
@@ -89,12 +106,17 @@ const GameScreen = ({ onGameOver, gameMode }) => {
     }
   
     try {
-      console.log(`Submitting score: ${score}`);
+      console.log(`Attempting to submit score: ${score}`);
       const tx = await contract.submitScore(score);
       await tx.wait();
       console.log(`Score submitted successfully. Transaction hash: ${tx.hash}`);
+      setCanStartGame(false); // Reset the game state after score submission
     } catch (error) {
       console.error("Error submitting score:", error);
+      if (error.reason === "No more scores to submit for this entry") {
+        console.log("This entry has already submitted a score. To play again, start a new paid game.");
+        setCanStartGame(false);
+      }
     }
   };
 
@@ -159,6 +181,7 @@ const GameScreen = ({ onGameOver, gameMode }) => {
     }
 
     function create() {
+      console.log('New game started. Game mode:', gameMode);
       this.background = this.add.tileSprite(0, 0, this.game.config.width, this.game.config.height, 'background');
       this.background.setOrigin(0, 0);
       this.background.setScrollFactor(0);
@@ -260,11 +283,19 @@ const GameScreen = ({ onGameOver, gameMode }) => {
         loop: true
       });
     
-      this.events.on('gameover', (score) => {
+      this.events.on('gameover', async (score) => {
+        console.log('Game Over triggered. Score:', score);
         if (gameMode === 'paid') {
-          submitScore(score);
+          console.log('Paid game mode detected. Attempting to submit score.');
+          await checkGameState();
+          try {
+            await submitScore(score);
+            await checkGameState();
+          } catch (error) {
+            console.error("Error during score submission:", error);
+          }
         }
-        console.log('Calling onGameOver prop'); // Debugging
+        console.log('Calling onGameOver prop');
         onGameOver(score);
       });
     

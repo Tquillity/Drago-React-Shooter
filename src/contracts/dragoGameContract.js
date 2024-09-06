@@ -134,6 +134,25 @@ export const DRAGO_GAME_ABI = [
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "score",
+        "type": "uint256"
+      }
+    ],
+    "name": "ScoreSubmitted",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "ENTRY_FEE",
     "outputs": [
@@ -347,4 +366,4 @@ export const DRAGO_GAME_ABI = [
   }
 ];
 
-export const DRAGO_GAME_ADDRESS = '0x0761dcF1Cb0257deb726155D39969Fc750DD005d'; // My contract address :D!
+export const DRAGO_GAME_ADDRESS = '0x6487EB2d7a235A346d3EA978E5a669Ba2DC75c2c'; // My contract address :D!

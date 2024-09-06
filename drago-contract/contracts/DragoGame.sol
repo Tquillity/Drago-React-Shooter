@@ -28,6 +28,7 @@ contract DragoGame is ReentrancyGuard, Ownable {
     event NewHighScore(address player, uint256 score);
     event EventEnded(address winner, uint256 winningScore);
     event EventClosedByAdmin(address highestScorer, uint256 highestScore);
+    event ScoreSubmitted(address player, uint256 score);
 
     constructor() Ownable(msg.sender) {}
 
@@ -57,20 +58,21 @@ contract DragoGame is ReentrancyGuard, Ownable {
         emit PlayerJoined(msg.sender);
     }
 
-    function submitScore(uint256 score) external nonReentrant {
-        require(eventActive, "No active event");
-        require(currentEvent.playerEntries[msg.sender] > currentEvent.submittedScoreCount[msg.sender], "No more scores to submit");
-        require(block.timestamp < currentEvent.startTime + EVENT_DURATION, "Event has ended");
+function submitScore(uint256 score) external nonReentrant {
+    require(eventActive, "No active event");
+    require(currentEvent.playerEntries[msg.sender] > currentEvent.submittedScoreCount[msg.sender], "No more scores to submit for this entry");
+    
+    currentEvent.submittedScoreCount[msg.sender]++;
+    currentEvent.submittedScores++;
 
-        currentEvent.submittedScoreCount[msg.sender]++;
-        currentEvent.submittedScores++;
-
-        if (score > currentEvent.highestScore) {
-            currentEvent.highestScore = score;
-            currentEvent.highestScorer = msg.sender;
-            emit NewHighScore(msg.sender, score);
-        }
+    if (score > currentEvent.highestScore) {
+        currentEvent.highestScore = score;
+        currentEvent.highestScorer = msg.sender;
+        emit NewHighScore(msg.sender, score);
     }
+    
+    emit ScoreSubmitted(msg.sender, score);
+}
 
     function endEventAndClaimPrize() external nonReentrant {
         require(eventActive, "No active event");
