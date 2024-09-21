@@ -1,16 +1,140 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
+import { ethers } from 'ethers';
 import { Weapon } from '../modules/weapons';
 import { GameStateManager } from '../managers/GameStateManager';
 import { PowerUpManager } from '../managers/PowerUpManager';
 import { MonsterManager } from '../managers/MonsterManager';
 import { WaveManager } from '../managers/WaveManager';
+import PaidGameStats from './PaidGameStats';
+import { DRAGO_GAME_ABI, DRAGO_GAME_ADDRESS } from '../contracts/dragoGameContract';
 
 const GameScreen = ({ onGameOver, gameMode }) => {
   const gameRef = useRef(null);
   const game = useRef(null);
+  const [showStats, setShowStats] = useState(false);
+  const [contract, setContract] = useState(null);
+  const [signer, setSigner] = useState(null);
+  const [isEventActive, setIsEventActive] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [canStartGame, setCanStartGame] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    const initializeEthers = async () => {
+      if (typeof window.ethereum !== 'undefined') {
+        try {
+          await window.ethereum.request({ method: 'eth_requestAccounts' });
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const signerInstance = await provider.getSigner();
+          setSigner(signerInstance);
+          
+          const contractInstance = new ethers.Contract(DRAGO_GAME_ADDRESS, DRAGO_GAME_ABI, signerInstance);
+          setContract(contractInstance);
+
+          // Check if an event is already active
+          const eventActive = await contractInstance.eventActive();
+          setIsEventActive(eventActive);
+          setShowStats(eventActive);
+
+          if (gameMode === 'free') {
+            setCanStartGame(true);
+          } else if (eventActive) {
+            setCanStartGame(true);
+          }
+        } catch (error) {
+          console.error("Error initializing ethers:", error);
+          setError("Failed to connect to MetaMask. Please make sure it's installed and unlocked.");
+        }
+      } else {
+        setError("MetaMask not detected. Please install MetaMask to play paid games.");
+      }
+    };
+
+    initializeEthers();
+  }, [gameMode]);
+
+  const checkGameState = async () => {
+    if (!contract) return;
+    try {
+      const eventActive = await contract.eventActive();
+      const eventDetails = await contract.getCurrentEventDetails();
+      console.log('Current game state:', {
+        eventActive,
+        playerCount: eventDetails.playerCount.toString(),
+        submittedScores: eventDetails.submittedScores.toString(),
+        highestScore: eventDetails.highestScore.toString()
+      });
+    } catch (error) {
+      console.error('Error checking game state:', error);
+    }
+  };
+
+  const startPaidGame = async () => {
+    if (!contract) {
+      setError("Contract not initialized. Please try refreshing the page.");
+      return;
+    }
+  
+    setIsLoading(true);
+    setError(null);
+    try {
+      const eventActive = await contract.eventActive();
+      let tx;
+      if (eventActive) {
+        tx = await contract.joinGame({ value: ethers.parseEther("0.01") });
+      } else {
+        tx = await contract.startGame({ value: ethers.parseEther("0.01") });
+      }
+      await tx.wait();
+      setIsEventActive(true);
+      setShowStats(true);
+      setCanStartGame(true);
+      await checkGameState();
+    } catch (error) {
+      console.error("Error starting/joining paid game:", error);
+      setError("Failed to start/join the game. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const submitScore = async (score) => {
+    if (!contract) {
+      console.error("Contract not initialized");
+      return;
+    }
+  
+    try {
+      console.log(`Attempting to submit score: ${score}`);
+      const tx = await contract.submitScore(score);
+      await tx.wait();
+      console.log(`Score submitted successfully. Transaction hash: ${tx.hash}`);
+      setCanStartGame(false); // Reset the game state after score submission
+    } catch (error) {
+      console.error("Error submitting score:", error);
+      if (error.reason === "No more scores to submit for this entry") {
+        console.log("This entry has already submitted a score. To play again, start a new paid game.");
+        setCanStartGame(false);
+      }
+    }
+  };
+
+  const endEventAndClaimPrize = async () => {
+    if (!contract) return;
+
+    try {
+      await contract.endEventAndClaimPrize();
+      setIsEventActive(false);
+      setShowStats(false);
+    } catch (error) {
+      console.error("Error ending event and claiming prize:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (!canStartGame) return;
+
     const config = {
       type: Phaser.AUTO,
       width: 640,
@@ -159,10 +283,54 @@ const GameScreen = ({ onGameOver, gameMode }) => {
         loop: true
       });
     
-      this.events.on('gameover', (score) => {
+      this.events.on('gameover', async (score) => {
         console.log('Game Over triggered. Score:', score);
+        if (gameMode === 'paid') {
+          console.log('Paid game mode detected. Attempting to submit score.');
+          await checkGameState();
+          try {
+            await submitScore(score);
+            await checkGameState();
+          } catch (error) {
+            console.error("Error during score submission:", error);
+          }
+        }
+        console.log('Calling onGameOver prop');
         onGameOver(score);
       });
+    
+      if (gameMode === 'paid' && !isEventActive) {
+        startPaidGame();
+      }
+    
+      // Add a button for the winner to end the game
+      if (gameMode === 'paid') {
+        const endGameButton = this.add.text(this.game.config.width - 10, 10, 'End Game and withdraw prize', {
+          font: '16px Arial',
+          fill: '#ffffff'
+        })
+        .setOrigin(1, 0)
+        .setInteractive()
+        .on('pointerdown', () => {
+          endEventAndClaimPrize();
+        });
+    
+        // Only show the button if the player is the current highest scorer
+        const updateEndGameButton = async () => {
+          if (contract) {
+            const eventDetails = await contract.getCurrentEventDetails();
+            const playerAddress = await signer.getAddress();
+            endGameButton.visible = (eventDetails.highestScorer.toLowerCase() === playerAddress.toLowerCase());
+          }
+        };
+    
+        // Update the button visibility every 5 seconds
+        this.time.addEvent({
+          delay: 5000,
+          callback: updateEndGameButton,
+          loop: true
+        });
+      }
     }
 
     function update() {
@@ -204,13 +372,48 @@ const GameScreen = ({ onGameOver, gameMode }) => {
         game.current = null;
       }
     };
-  }, [onGameOver, gameMode]);
+  }, [onGameOver, gameMode, contract, isEventActive, signer, canStartGame]);
+
+  useEffect(() => {
+    if (gameMode === 'paid' && !isEventActive && !isLoading && !canStartGame) {
+      startPaidGame();
+    }
+  }, [gameMode, isEventActive, isLoading, canStartGame]);
+
+  if (isLoading) {
+    return (
+      <div className="loading-screen">
+        <h2>Processing Transaction</h2>
+        <p>Please wait while we confirm your entry fee payment...</p>
+      </div>
+    );
+  }
+
+  if (!canStartGame && gameMode === 'paid') {
+    return (
+      <div className="waiting-screen">
+        <h2>Ready to Start Paid Game</h2>
+        <p>Click the button below to pay the entry fee and start the game.</p>
+        <button onClick={startPaidGame} disabled={isLoading}>
+          {isLoading ? 'Processing...' : 'Pay Entry Fee and Start Game'}
+        </button>
+        {error && <p className="error-message">{error}</p>}
+      </div>
+    );
+  }
 
   return (
     <div className="game-screen">
       <h1>Space Shooter</h1>
       <div className="game-container">
         <div ref={gameRef} id="game"></div>
+        {(showStats || isEventActive) && (
+          <PaidGameStats
+            contractAddress={DRAGO_GAME_ADDRESS}
+            provider={signer?.provider}
+            onEventEnd={endEventAndClaimPrize}
+          />
+        )}
       </div>
       <div id="musicToggle">
         <input type="checkbox" id="toggleMusic" />
