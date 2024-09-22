@@ -229,27 +229,28 @@ Weapon.ScaleBullet = class extends BaseWeapon {
 Weapon.Combo1 = class extends BaseWeapon {
   constructor(scene) {
     super(scene, 'Combo One');
-    this.weapon1 = new Weapon.SingleBullet(scene);
-    this.weapon2 = new Weapon.Rockets(scene);
+    this.weapons = [
+      new Weapon.SingleBullet(scene),
+      new Weapon.Rockets(scene)
+    ];
   }
 
   fire(source) {
-    this.weapon1.fire(source);
-    this.weapon2.fire(source);
+    this.weapons.forEach(weapon => weapon.fire(source));
   }
 };
 
 Weapon.Combo2 = class extends BaseWeapon {
   constructor(scene) {
     super(scene, 'Combo Two');
-    this.weapon1 = new Weapon.Pattern(scene);
-    this.weapon2 = new Weapon.ThreeWay(scene);
-    this.weapon3 = new Weapon.Rockets(scene);
+    this.weapons = [
+      new Weapon.Pattern(scene),
+      new Weapon.ThreeWay(scene),
+      new Weapon.Rockets(scene)
+    ];
   }
 
   fire(source) {
-    this.weapon1.fire(source);
-    this.weapon2.fire(source);
-    this.weapon3.fire(source);
+    this.weapons.forEach(weapon => weapon.fire(source));
   }
 };

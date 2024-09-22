@@ -136,7 +136,7 @@ const GameScreen = ({ onGameOver, gameMode }) => {
       this.monsterManager = new MonsterManager(this);
       this.waveManager = new WaveManager(this, this.monsterManager);
     
-      this.monsterManager.setupCollisions(this.player, this.weapons[this.currentWeapon].bullets);
+      this.monsterManager.setupCollisions(this.player, this.weapons);
     
       this.waveManager.startWaves();
     

@@ -50,11 +50,22 @@ export class MonsterManager {
   }
 
   // Set up collision detection for monsters
-  setupCollisions(player, bulletGroup) {
-    // Player-monster collision
+  setupCollisions(player, weapons) {
     this.scene.physics.add.overlap(player, this.monsters, this.playerMonsterCollision, null, this);
-    // Bullet-monster collision
-    this.scene.physics.add.overlap(bulletGroup, this.monsters, this.bulletMonsterCollision, null, this);
+    
+    weapons.forEach(weapon => {
+      if (weapon.bullets) {
+        this.scene.physics.add.overlap(weapon.bullets, this.monsters, this.bulletMonsterCollision, null, this);
+      }
+      // Handle composite weapons
+      if (weapon.weapons) {
+        weapon.weapons.forEach(subWeapon => {
+          if (subWeapon.bullets) {
+            this.scene.physics.add.overlap(subWeapon.bullets, this.monsters, this.bulletMonsterCollision, null, this);
+          }
+        });
+      }
+    });
   }
 
   // Handle collision between player and monster
